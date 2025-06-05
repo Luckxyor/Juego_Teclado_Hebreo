@@ -409,7 +409,7 @@
 <body>
   <header>
     <span>Hebrew Letter Match</span>
-    <span id="score">0 / 22</span>
+    <span id="score">0 / 28</span>
   </header>
   <main>
     <div class="wheel-container">
@@ -567,7 +567,7 @@ function renderKeyboard() {
         renderWheel();
         renderKeyboard();
         currentLetter = null;
-        if(score===22) {
+        if(score===28) {
           setTimeout(()=>showEndScreen(),1200);
         } else {
           setTimeout(()=>spinBtn.disabled=false,1200);
@@ -583,8 +583,8 @@ function renderKeyboard() {
 
     // Progress
     function updateScore() {
-      scoreElem.textContent = score + ' / 22';
-      progress.textContent = `Progreso: ${score} de 22 letras`;
+      scoreElem.textContent = score + ' / 28';
+      progress.textContent = `Progreso: ${score} de 28 letras`;
     }
     // Spin wheel
     function spinWheel() {
@@ -711,7 +711,7 @@ function renderKeyboard() {
           renderWheel();
           renderKeyboard();
           currentLetter = null;
-          if(score===22) {
+          if(score===28) {
             setTimeout(()=>showEndScreen(),1200);
           } else {
             setTimeout(()=>spinBtn.disabled=false,1200);
@@ -782,7 +782,7 @@ function renderKeyboard() {
           renderWheel();
           renderKeyboard();
           currentLetter = null;
-          if(score===22) {
+          if(score===28) {
             setTimeout(()=>showEndScreen(),1200);
           } else {
             setTimeout(()=>spinBtn.disabled=false,1200);
@@ -851,7 +851,7 @@ function renderKeyboard() {
       hideDraggableLetter();
       spinBtn.disabled = false;
       endScreen.classList.remove('show');
-      progress.textContent = `Progreso: 0 de 22 letras`;
+      progress.textContent = `Progreso: 0 de 28 letras`;
     }
     // Desbloquear audio en la primera interacción del usuario
     let audioUnlocked = false;
