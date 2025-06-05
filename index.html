@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Hebrew Letter Match</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Alef:wght@700&display=swap">
+  <style>
+    :root {
+      --pastel-blue: #aee7fa;
+      --pastel-pink: #ffd6e0;
+      --pastel-yellow: #fff7ae;
+      --pastel-green: #caffd0;
+      --pastel-purple: #e0d6ff;
+      --main-font: 'Fredoka One', 'Alef', Arial, sans-serif;
+      --letter-size: 2.5rem;
+      --big-letter-size: 5rem;
+      --transition: 0.3s cubic-bezier(.68,-0.55,.27,1.55);
+      --glow-green: 0 0 20px 5px #7fff7f;
+      --glow-red: 0 0 20px 5px #ff7f7f;
+    }
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, var(--pastel-blue) 0%, var(--pastel-pink) 100%);
+      font-family: var(--main-font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow-x: hidden;
+    }
+    header {
+      width: 100%;
+      background: var(--pastel-yellow);
+      padding: 1.2rem 0 0.7rem 0;
+      text-align: center;
+      box-shadow: 0 2px 10px #0001;
+      font-size: 2.2rem;
+      letter-spacing: 2px;
+      font-family: var(--main-font);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    #score {
+      font-size: 1.3rem;
+      color: #4caf50;
+      margin-left: 1.5rem;
+      vertical-align: middle;
+      background: var(--pastel-green);
+      border-radius: 1rem;
+      padding: 0.3rem 1rem;
+      box-shadow: 0 2px 8px #0002;
+      display: inline-block;
+    }
+    main {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2.5rem;
+      padding: 2rem 1rem 1rem 1rem;
+    }
+    /* Wheel */
+    .wheel-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2rem;
+      position: relative; /* Asegura que el pin se posicione respecto a la rueda */
+    }
+    #wheel {
+      width: 440px;    /* antes 320px */
+      height: 440px;   /* antes 320px */
+      border-radius: 50%;
+      background: conic-gradient(
+        var(--pastel-blue) 0% 16.6%,
+        var(--pastel-pink) 16.6% 33.3%,
+        var(--pastel-yellow) 33.3% 50%,
+        var(--pastel-green) 50% 66.6%,
+        var(--pastel-purple) 66.6% 83.3%,
+        var(--pastel-blue) 83.3% 100%
+      );
+      box-shadow: 0 8px 32px #0002;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.5rem;
+      transition: filter 0.2s;
+    }
+    .wheel-letter {
+      position: absolute;
+      font-size: 2.2rem;
+      font-family: 'Alef', var(--main-font);
+      color: #333;
+      background: #fff8;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    #wheel-pointer {
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0; height: 0;
+      border-left: 18px solid transparent;
+      border-right: 18px solid transparent;
+      border-bottom: 30px solid #ffb347;
+      filter: drop-shadow(0 2px 4px #0003);
+      z-index: 2;
+    }
+    #wheel-center-pin {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 22px;
+      height: 70px;
+      background: linear-gradient(180deg, #e0e0e0 0%, #bdbdbd 80%, #888 100%);
+      border-radius: 12px;
+      box-shadow: 0 2px 8px #0003;
+      z-index: 3;
+      pointer-events: none;
+    }
+    #spin-btn {
+      font-size: 2rem;
+      background: linear-gradient(90deg, var(--pastel-green), var(--pastel-yellow));
+      border: none;
+      border-radius: 2rem;
+      padding: 0.7rem 2.5rem;
+      margin-top: 0.5rem;
+      cursor: pointer;
+      box-shadow: 0 4px 16px #0002;
+      font-family: var(--main-font);
+      transition: transform 0.15s, background 0.2s;
+      outline: none;
+    }
+    #spin-btn:active {
+      transform: scale(0.97);
+      background: linear-gradient(90deg, var(--pastel-yellow), var(--pastel-green));
+    }
+    /* Draggable Letter */
+    .draggable-area {
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0.5rem 0 1rem 0;
+    }
+    #draggable-letter {
+      font-size: var(--big-letter-size);
+      font-family: 'Alef', var(--main-font);
+      background: #fff;
+      border-radius: 1.2rem;
+      box-shadow: 0 6px 24px #0002;
+      width: 110px;
+      height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      user-select: none;
+      transition: box-shadow 0.2s, transform 0.2s;
+      border: 4px solid var(--pastel-blue);
+      animation: popIn 0.7s cubic-bezier(.68,-0.55,.27,1.55);
+      z-index: 2;
+    }
+    #draggable-letter.bounce {
+      animation: bounce 0.5s;
+    }
+    #draggable-letter.shake {
+      animation: shake 0.4s;
+      border-color: #ff7f7f;
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.2); opacity: 0; }
+      70% { transform: scale(1.15); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+    @keyframes bounce {
+      0% { transform: scale(1); }
+      30% { transform: scale(1.2); }
+      60% { transform: scale(0.95); }
+      100% { transform: scale(1); }
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%,60% { transform: translateX(-18px); }
+      40%,80% { transform: translateX(18px); }
+    }
+    .key {
+      font-size: var(--letter-size);
+      font-family: 'Alef', var(--main-font);
+      background: #fff;
+      border-radius: 1rem;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px #0001;
+      border: 3px solid #e0e0e0;
+      cursor: pointer;
+      transition: box-shadow 0.2s, border 0.2s, background 0.2s, transform 0.15s;
+      user-select: none;
+      position: relative;
+      z-index: 1;
+    }
+    .key.correct {
+      background: #d4ffd4;
+      border-color: #4caf50;
+      box-shadow: var(--glow-green);
+      animation: keyGlow 0.7s;
+    }
+    .key.incorrect {
+      background: #ffd4d4;
+      border-color: #ff7f7f;
+      box-shadow: var(--glow-red);
+      animation: shake 0.4s;
+    }
+    .key.disabled {
+      opacity: 0.4;
+      pointer-events: none;
+      background: #eee;
+      border-color: #ccc;
+      box-shadow: none;
+    }
+    @keyframes keyGlow {
+      0% { box-shadow: 0 0 0 0 #7fff7f; }
+      80% { box-shadow: 0 0 20px 8px #7fff7f; }
+      100% { box-shadow: var(--glow-green); }
+    }
+    /* Confetti */
+    .confetti {
+      position: fixed;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      pointer-events: none;
+      z-index: 1000;
+    }
+    .confetti-piece {
+      position: absolute;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      opacity: 0.8;
+      animation: confetti-fall 1.2s linear forwards;
+    }
+    @keyframes confetti-fall {
+      0% { transform: translateY(-40px) scale(1.2) rotate(0deg);}
+      80% { opacity: 1;}
+      100% { transform: translateY(100vh) scale(0.7) rotate(360deg); opacity: 0;}
+    }
+    /* End screen */
+    #end-screen {
+      position: fixed;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      background: rgba(255,255,255,0.97);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      color: #4caf50;
+      z-index: 2000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s;
+    }
+    #end-screen.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+    #end-screen .balloon {
+      width: 60px; height: 80px;
+      border-radius: 30px 30px 30px 30px / 40px 40px 40px 40px;
+      background: linear-gradient(135deg, #ffd6e0 60%, #aee7fa 100%);
+      margin: 0 10px;
+      display: inline-block;
+      position: relative;
+      animation: balloonUp 2.5s ease-in-out infinite;
+    }
+    #end-screen .balloon:nth-child(2) { background: linear-gradient(135deg, #fff7ae 60%, #caffd0 100%); animation-delay: 0.7s;}
+    #end-screen .balloon:nth-child(3) { background: linear-gradient(135deg, #e0d6ff 60%, #ffd6e0 100%); animation-delay: 1.2s;}
+    @keyframes balloonUp {
+      0% { transform: translateY(0);}
+      50% { transform: translateY(-40px);}
+      100% { transform: translateY(0);}
+    }
+    #end-screen button {
+      margin-top: 2.5rem;
+      font-size: 1.5rem;
+      background: linear-gradient(90deg, var(--pastel-green), var(--pastel-yellow));
+      border: none;
+      border-radius: 1.5rem;
+      padding: 0.7rem 2.5rem;
+      cursor: pointer;
+      box-shadow: 0 4px 16px #0002;
+      font-family: var(--main-font);
+      transition: transform 0.15s, background 0.2s;
+      outline: none;
+    }
+    /* Footer */
+    footer {
+      width: 100%;
+      text-align: center;
+      padding: 1.2rem 0 1.2rem 0;
+      background: var(--pastel-yellow);
+      font-size: 1.1rem;
+      margin-top: auto;
+      box-shadow: 0 -2px 10px #0001;
+    }
+    #restart-btn {
+      font-size: 1.2rem;
+      background: linear-gradient(90deg, var(--pastel-pink), var(--pastel-blue));
+      border: none;
+      border-radius: 1rem;
+      padding: 0.5rem 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 2px 8px #0002;
+      font-family: var(--main-font);
+      margin-top: 0.5rem;
+      transition: transform 0.15s, background 0.2s;
+      outline: none;
+    }
+    #restart-btn:active {
+      transform: scale(0.97);
+      background: linear-gradient(90deg, var(--pastel-blue), var(--pastel-pink));
+    }
+    /* Responsive */
+    @media (max-width: 700px) {
+      #wheel { width: 220px; height: 220px;}
+      .keyboard { grid-template-columns: repeat(6, 1fr); max-width: 98vw;}
+      .key { width: 44px; height: 44px; font-size: 1.5rem;}
+      #draggable-letter { width: 70px; height: 70px; font-size: 2.7rem;}
+    }
+    @media (max-width: 480px) {
+      main { padding: 0.5rem 0.2rem;}
+      #wheel { width: 150px; height: 150px;}
+      .keyboard { grid-template-columns: repeat(4, 1fr);}
+      .key { width: 36px; height: 36px; font-size: 1.1rem;}
+      #draggable-letter { width: 48px; height: 48px; font-size: 1.5rem;}
+    }
+
+#keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* antes 12px */
+  background: linear-gradient(to bottom, #4a90e2, #1e5799);
+  padding: 30px; /* antes 20px */
+  border-radius: 32px; /* antes 20px */
+  box-shadow: 0 12px 36px #0003;
+  width: fit-content;
+  margin: 2.5rem auto;
+  direction: rtl;
+}
+
+.keyboard-row {
+  display: flex;
+  justify-content: center;
+  gap: 18px; /* antes 8px */
+}
+
+.key {
+  background: white;
+  color: #0057b8;
+  font-size: 30px;   /* antes 22px */
+  font-weight: bold;
+  border: none;
+  border-radius: 18px; /* antes 12px */
+  width: 70px;        /* antes 48px */
+  height: 70px;       /* antes 48px */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Tamaños especiales */
+.key.backspace,
+.key.enter,
+.key.alt {
+  width: 70px;
+  font-size: 32px;
+}
+
+.key.space {
+  width: 320px;
+  height: 70px;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+
+  </style>
+</head>
+<body>
+  <header>
+    <span>Hebrew Letter Match</span>
+    <span id="score">0 / 22</span>
+  </header>
+  <main>
+    <div class="wheel-container">
+      <div id="wheel-pointer"></div>
+      <div id="wheel"></div>
+      <div id="wheel-center-pin"></div> <!-- Agrega este div -->
+      <button id="spin-btn">¡Gira!</button>
+    </div>
+    <div class="draggable-area">
+      <div id="draggable-letter" draggable="true" style="display:none"></div>
+    </div>
+    <div class="keyboard" id="keyboard"></div>
+    <div id="progress" style="font-size:1.2rem;color:#555;margin-top:-1rem;"></div>
+  </main>
+  <footer>
+    <button id="restart-btn">Reiniciar Juego</button>
+  </footer>
+  <div class="confetti" id="confetti"></div>
+  <div id="end-screen">
+    <div style="font-size:3rem;margin-bottom:1.2rem;">¡Mazel tov! 🎉</div>
+    <div style="font-size:2rem;margin-bottom:1.2rem;">¡Has emparejado todas las letras hebreas!</div>
+    <div>
+      <span class="balloon"></span>
+      <span class="balloon"></span>
+      <span class="balloon"></span>
+    </div>
+    <button onclick="restartGame()">Jugar de nuevo</button>
+  </div>
+  <audio id="audio-correct" src="audio/audio-correct.mp3"></audio>
+<audio id="audio-oops" src="audio/audio-oops.mp3"></audio>
+<audio id="audio-spin" src="audio/audio-spin.mp3"></audio>
+  <script>
+    // Hebrew letters
+const HEBREW_LETTERS = [
+  'פ','ו','ט','א','ר','ק','ש','ד',
+  'ג','כ','ע','י','ח','ל','ז','ס',
+  'ב','ה','נ','מ','צ','ת','ץ','שׂ'
+];
+    let availableLetters = [...HEBREW_LETTERS];
+    let usedLetters = [];
+    let score = 0;
+    let currentLetter = null;
+    let spinning = false;
+    let dragging = false;
+    let dragOffset = {x:0, y:0};
+    let dragOrigin = {x:0, y:0};
+    let dragElem = null;
+    let endGame = false;
+
+    // DOM
+    const wheel = document.getElementById('wheel');
+    const spinBtn = document.getElementById('spin-btn');
+    const draggableLetter = document.getElementById('draggable-letter');
+    const keyboard = document.getElementById('keyboard');
+    const scoreElem = document.getElementById('score');
+    const confetti = document.getElementById('confetti');
+    const endScreen = document.getElementById('end-screen');
+    const progress = document.getElementById('progress');
+    const audioCorrect = document.getElementById('audio-correct');
+    const audioOops = document.getElementById('audio-oops');
+    const audioSpin = document.getElementById('audio-spin');
+
+    // Wheel rendering
+    function renderWheel() {
+      wheel.innerHTML = '';
+      const n = availableLetters.length;
+      const radius = wheel.offsetWidth/2 - 40;
+      for(let i=0;i<n;i++) {
+        const angle = (2*Math.PI*i)/n - Math.PI/2;
+        const x = Math.cos(angle)*radius + wheel.offsetWidth/2 - 24;
+        const y = Math.sin(angle)*radius + wheel.offsetHeight/2 - 24;
+        const div = document.createElement('div');
+        div.className = 'wheel-letter';
+        div.style.left = x+'px';
+        div.style.top = y+'px';
+        div.textContent = availableLetters[i];
+        wheel.appendChild(div);
+      }
+    }
+    // Keyboard rendering
+function renderKeyboard() {
+  keyboard.innerHTML = '';
+
+  const rows = [
+    ['פ','ם','ן','ו','ט','א','ר','ק','שׂ'],
+    ['ף','ך','ל','ח','י','ע','כ','ג','ד','ש'],
+    ['⌫','ץ','ת','צ','מ','נ','ה','ב','ס','ז'],
+    ['↵',',','.',' ','?123']
+  ];
+
+  rows.forEach((rowLetters) => {
+    const row = document.createElement('div');
+    row.className = 'keyboard-row';
+
+    rowLetters.forEach(letter => {
+      const key = document.createElement('div');
+      key.className = 'key';
+
+      if (letter === '⌫') {
+        key.classList.add('backspace');
+        key.innerHTML = '⌫';
+      } else if (letter === '↵') {
+        key.classList.add('enter');
+        key.innerHTML = '↵';
+      } else if (letter === ' ') {
+        key.classList.add('space');
+        key.innerHTML = ''; // espacio
+      } else if (letter === '?123') {
+        key.classList.add('alt');
+        key.innerHTML = '?123';
+      } else {
+        key.textContent = letter;
+        key.dataset.letter = letter;
+        if (usedLetters.includes(letter)) key.classList.add('disabled');
+      }
+
+      row.appendChild(key);
+    });
+
+    keyboard.appendChild(row);
+  });
+}
+
+
+
+
+    // Drag & Drop global para el teclado
+    keyboard.addEventListener('dragover', e => {
+      if (!currentLetter) return;
+      const key = e.target.closest('.key');
+      if(key && !key.classList.contains('disabled')) {
+        e.preventDefault();
+        key.style.transform = 'scale(1.15)';
+      }
+    });
+    keyboard.addEventListener('dragleave', e => {
+      const key = e.target.closest('.key');
+      if(key) key.style.transform = '';
+    });
+    keyboard.addEventListener('drop', e => {
+      e.preventDefault();
+      const key = e.target.closest('.key');
+      if(!key || key.classList.contains('disabled') || !currentLetter) return;
+      key.style.transform = '';
+      if(key.dataset.letter === currentLetter) {
+        key.classList.add('correct');
+        setTimeout(()=>key.classList.remove('correct'),900);
+        audioCorrect.currentTime = 0; audioCorrect.play();
+        showConfetti();
+        score++;
+        usedLetters.push(currentLetter);
+        availableLetters = availableLetters.filter(l=>l!==currentLetter);
+        updateScore();
+        hideDraggableLetter();
+        renderWheel();
+        renderKeyboard();
+        currentLetter = null;
+        if(score===22) {
+          setTimeout(()=>showEndScreen(),1200);
+        } else {
+          setTimeout(()=>spinBtn.disabled=false,1200);
+        }
+      } else {
+        key.classList.add('incorrect');
+        setTimeout(()=>key.classList.remove('incorrect'),600);
+        draggableLetter.classList.add('shake');
+        audioOops.currentTime = 0; audioOops.play();
+        setTimeout(()=>draggableLetter.classList.remove('shake'),400);
+      }
+    });
+
+    // Progress
+    function updateScore() {
+      scoreElem.textContent = score + ' / 22';
+      progress.textContent = `Progreso: ${score} de 22 letras`;
+    }
+    // Spin wheel
+    function spinWheel() {
+      if(spinning || availableLetters.length===0) return;
+      spinning = true;
+      spinBtn.disabled = true;
+      audioSpin.currentTime = 0; audioSpin.play();
+      // Animation
+      let n = availableLetters.length;
+      let chosenIdx = Math.floor(Math.random()*n);
+      let chosenLetter = availableLetters[chosenIdx];
+      let anglePer = 360/n;
+      let finalAngle = 360*4 + chosenIdx*anglePer + anglePer/2;
+      wheel.style.transition = 'transform 2.2s cubic-bezier(.22,1.61,.36,1)';
+      wheel.style.transform = `rotate(${finalAngle}deg)`;
+      setTimeout(()=>{
+        wheel.style.transition = '';
+        wheel.style.transform = '';
+        showDraggableLetter(chosenLetter);
+        spinning = false;
+        spinBtn.disabled = true;
+      },2200);
+      setTimeout(()=>{audioSpin.pause();},1200);
+      currentLetter = chosenLetter;
+    }
+    // Show draggable letter
+    function showDraggableLetter(letter) {
+      draggableLetter.textContent = letter;
+      draggableLetter.style.display = '';
+      draggableLetter.classList.remove('shake');
+      draggableLetter.classList.add('bounce');
+      setTimeout(()=>draggableLetter.classList.remove('bounce'),500);
+      // Enable drag
+      draggableLetter.setAttribute('draggable','true');
+    }
+    // Hide draggable letter
+    function hideDraggableLetter() {
+      draggableLetter.style.display = 'none';
+      draggableLetter.textContent = '';
+      draggableLetter.setAttribute('draggable','false');
+    }
+
+    // Drag events para el área de la letra
+    draggableLetter.addEventListener('dragstart', e=>{
+      if (!currentLetter) {
+        e.preventDefault();
+        return;
+      }
+      setTimeout(()=>draggableLetter.style.opacity='0.5',0);
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData('text/plain', currentLetter);
+
+      // Solución: imagen fantasma personalizada para Chrome/Edge
+      if (typeof e.dataTransfer.setDragImage === "function") {
+        const crt = draggableLetter.cloneNode(true);
+        crt.style.position = "absolute";
+        crt.style.top = "-9999px";
+        crt.style.left = "-9999px";
+        crt.style.opacity = "1";
+        document.body.appendChild(crt);
+        e.dataTransfer.setDragImage(crt, crt.offsetWidth/2, crt.offsetHeight/2);
+        setTimeout(()=>document.body.removeChild(crt),0);
+      }
+    });
+
+    draggableLetter.addEventListener('dragend', e=>{
+      draggableLetter.style.opacity='1';
+    });
+
+    // --- DRAG & DROP TOUCH (MÓVIL) ---
+    let touchDragging = false;
+    let touchElem = null;
+    let touchOffset = {x:0, y:0};
+
+    draggableLetter.addEventListener('touchstart', function(e){
+      if (!currentLetter) return;
+      touchDragging = true;
+      touchElem = draggableLetter;
+      touchElem.style.transition = 'none';
+      const touch = e.touches[0];
+      touchOffset.x = touch.clientX - touchElem.getBoundingClientRect().left;
+      touchOffset.y = touch.clientY - touchElem.getBoundingClientRect().top;
+      document.body.style.overflow = 'hidden';
+    }, {passive:false});
+
+    document.addEventListener('touchmove', function(e){
+      if(!touchDragging || !touchElem) return;
+      const touch = e.touches[0];
+      let x = touch.clientX - touchOffset.x;
+      let y = touch.clientY - touchOffset.y;
+      touchElem.style.position = 'fixed';
+      touchElem.style.left = x+'px';
+      touchElem.style.top = y+'px';
+      touchElem.style.zIndex = 1000;
+      // Resalta la tecla bajo el dedo
+      let elem = document.elementFromPoint(touch.clientX, touch.clientY);
+      document.querySelectorAll('.key').forEach(k=>k.style.transform='');
+      if(elem && elem.classList.contains('key') && !elem.classList.contains('disabled')) {
+        elem.style.transform = 'scale(1.15)';
+      }
+    }, {passive:false});
+
+    document.addEventListener('touchend', function(e){
+      if(!touchDragging || !touchElem) return;
+      touchElem.style.position = '';
+      touchElem.style.left = '';
+      touchElem.style.top = '';
+      touchElem.style.zIndex = '';
+      document.body.style.overflow = '';
+      let touch = e.changedTouches[0];
+      let elem = document.elementFromPoint(touch.clientX, touch.clientY);
+      document.querySelectorAll('.key').forEach(k=>k.style.transform='');
+      if(elem && elem.classList.contains('key') && !elem.classList.contains('disabled')) {
+        if(elem.dataset.letter === currentLetter) {
+          elem.classList.add('correct');
+          setTimeout(()=>elem.classList.remove('correct'),900);
+          audioCorrect.currentTime = 0; audioCorrect.play();
+          showConfetti();
+          score++;
+          usedLetters.push(currentLetter);
+          availableLetters = availableLetters.filter(l=>l!==currentLetter);
+          updateScore();
+          hideDraggableLetter();
+          renderWheel();
+          renderKeyboard();
+          currentLetter = null;
+          if(score===22) {
+            setTimeout(()=>showEndScreen(),1200);
+          } else {
+            setTimeout(()=>spinBtn.disabled=false,1200);
+          }
+        } else {
+          elem.classList.add('incorrect');
+          setTimeout(()=>elem.classList.remove('incorrect'),600);
+          draggableLetter.classList.add('shake');
+          audioOops.currentTime = 0; audioOops.play();
+          setTimeout(()=>draggableLetter.classList.remove('shake'),400);
+        }
+      }
+      touchDragging = false;
+      touchElem = null;
+    }, {passive:false});
+
+    // --- DRAG & DROP PC (MOUSE) ---
+    let mouseDragging = false;
+    let mouseElem = null;
+    let mouseOffset = {x:0, y:0};
+
+    draggableLetter.addEventListener('mousedown', function(e){
+      if (!currentLetter) return;
+      mouseDragging = true;
+      mouseElem = draggableLetter;
+      mouseElem.style.transition = 'none';
+      mouseOffset.x = e.clientX - mouseElem.getBoundingClientRect().left;
+      mouseOffset.y = e.clientY - mouseElem.getBoundingClientRect().top;
+      document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mousemove', function(e){
+      if(!mouseDragging || !mouseElem) return;
+      let x = e.clientX - mouseOffset.x;
+      let y = e.clientY - mouseOffset.y;
+      mouseElem.style.position = 'fixed';
+      mouseElem.style.left = x+'px';
+      mouseElem.style.top = y+'px';
+      mouseElem.style.zIndex = 1000;
+      // Resalta la tecla bajo el mouse
+      let elem = document.elementFromPoint(e.clientX, e.clientY);
+      document.querySelectorAll('.key').forEach(k=>k.style.transform='');
+      if(elem && elem.classList.contains('key') && !elem.classList.contains('disabled')) {
+        elem.style.transform = 'scale(1.15)';
+      }
+    });
+
+    document.addEventListener('mouseup', function(e){
+      if(!mouseDragging || !mouseElem) return;
+      mouseElem.style.position = '';
+      mouseElem.style.left = '';
+      mouseElem.style.top = '';
+      mouseElem.style.zIndex = '';
+      document.body.style.userSelect = '';
+      let elem = document.elementFromPoint(e.clientX, e.clientY);
+      document.querySelectorAll('.key').forEach(k=>k.style.transform='');
+      if(elem && elem.classList.contains('key') && !elem.classList.contains('disabled')) {
+        if(elem.dataset.letter === currentLetter) {
+          elem.classList.add('correct');
+          setTimeout(()=>elem.classList.remove('correct'),900);
+          audioCorrect.currentTime = 0; audioCorrect.play();
+          showConfetti();
+          score++;
+          usedLetters.push(currentLetter);
+          availableLetters = availableLetters.filter(l=>l!==currentLetter);
+          updateScore();
+          hideDraggableLetter();
+          renderWheel();
+          renderKeyboard();
+          currentLetter = null;
+          if(score===22) {
+            setTimeout(()=>showEndScreen(),1200);
+          } else {
+            setTimeout(()=>spinBtn.disabled=false,1200);
+          }
+        } else {
+          elem.classList.add('incorrect');
+          setTimeout(()=>elem.classList.remove('incorrect'),600);
+          draggableLetter.classList.add('shake');
+          audioOops.currentTime = 0; audioOops.play();
+          setTimeout(()=>draggableLetter.classList.remove('shake'),400);
+        }
+      }
+      mouseDragging = false;
+      mouseElem = null;
+    });
+
+    // Confetti
+    function showConfetti() {
+      for(let i=0;i<18;i++) {
+        let piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = (50+Math.random()*40-20)+'vw';
+        piece.style.top = (30+Math.random()*10-5)+'vh';
+        piece.style.background = [
+          'var(--pastel-blue)','var(--pastel-pink)','var(--pastel-yellow)','var(--pastel-green)','var(--pastel-purple)'
+        ][Math.floor(Math.random()*5)];
+        piece.style.animationDuration = (0.9+Math.random()*0.7)+'s';
+        confetti.appendChild(piece);
+        setTimeout(()=>piece.remove(),1200);
+      }
+    }
+    // End screen
+    function showEndScreen() {
+      endScreen.classList.add('show');
+      endGame = true;
+    }
+    function restartGame() {
+      endScreen.classList.remove('show');
+      score = 0;
+      availableLetters = [...HEBREW_LETTERS];
+      usedLetters = [];
+      currentLetter = null;
+      endGame = false;
+      updateScore();
+      renderWheel();
+      renderKeyboard();
+      hideDraggableLetter();
+      spinBtn.disabled = false;
+    }
+    document.getElementById('restart-btn').onclick = restartGame;
+    // Spin button
+    spinBtn.onclick = ()=>{
+      if(spinning || currentLetter || endGame) return;
+      unlockAudio(); // <-- Añade esto aquí
+      spinWheel();
+    };
+    // Prevent accidental text selection
+    document.body.addEventListener('mousedown', e=>{
+      if(e.target.classList.contains('key') || e.target.id==='draggable-letter') e.preventDefault();
+    });
+    // Init
+    function init() {
+      updateScore();
+      renderWheel();
+      renderKeyboard();
+      hideDraggableLetter();
+      spinBtn.disabled = false;
+      endScreen.classList.remove('show');
+      progress.textContent = `Progreso: 0 de 22 letras`;
+    }
+    // Desbloquear audio en la primera interacción del usuario
+    let audioUnlocked = false;
+function unlockAudio() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  [audioCorrect, audioOops, audioSpin].forEach(audio => {
+    audio.muted = true;
+    audio.play().catch(()=>{}); // Intenta reproducir
+    audio.pause();
+    audio.currentTime = 0;
+    audio.muted = false;
+  });
+}
+    document.addEventListener('pointerdown', unlockAudio);
+    document.addEventListener('touchstart', unlockAudio);
+
+    window.restartGame = restartGame;
+    window.onload = init;
+  </script>
+</body>
+</html>
