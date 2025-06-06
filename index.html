@@ -566,6 +566,8 @@ function renderKeyboard() {
         renderWheel();
         renderKeyboard();
         currentLetter = null;
+        // Scroll suave hacia arriba al acertar
+        smoothScrollTo(0, 1200);
         if(score===28) {
           setTimeout(()=>showEndScreen(),1200);
         } else {
@@ -603,6 +605,8 @@ function renderKeyboard() {
         wheel.style.transition = '';
         wheel.style.transform = '';
         showDraggableLetter(chosenLetter);
+        // Scroll suave y lento hacia abajo después del spin
+        smoothScrollTo(document.body.scrollHeight, 1200);
         spinning = false;
         spinBtn.disabled = true;
       },2200);
@@ -710,6 +714,8 @@ function renderKeyboard() {
           renderWheel();
           renderKeyboard();
           currentLetter = null;
+          // Scroll arriba
+          smoothScrollTo(0, 1200);
           if(score===28) {
             setTimeout(()=>showEndScreen(),1200);
           } else {
@@ -781,6 +787,8 @@ function renderKeyboard() {
           renderWheel();
           renderKeyboard();
           currentLetter = null;
+          // Scroll arriba
+          smoothScrollTo(0, 1200);
           if(score===28) {
             setTimeout(()=>showEndScreen(),1200);
           } else {
@@ -870,6 +878,27 @@ function unlockAudio() {
 
     window.restartGame = restartGame;
     window.onload = init;
+
+    // Añade esta función antes o después de tus funciones principales:
+function smoothScrollTo(targetY, duration = 1200) {
+  const startY = window.scrollY;
+  const diff = targetY - startY;
+  let start;
+
+  function step(timestamp) {
+    if (!start) start = timestamp;
+    const time = Math.min(1, (timestamp - start) / duration);
+    // easeInOutQuad
+    const eased = time < 0.5
+      ? 2 * time * time
+      : -1 + (4 - 2 * time) * time;
+    window.scrollTo(0, startY + diff * eased);
+    if (time < 1) {
+      requestAnimationFrame(step);
+    }
+  }
+  requestAnimationFrame(step);
+}
   </script>
 </body>
 </html>
