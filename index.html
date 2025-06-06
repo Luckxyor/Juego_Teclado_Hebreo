@@ -244,22 +244,25 @@
     }
     /* Confetti */
     .confetti {
-      position: fixed;
+      position: absolute; /* Cambia de fixed a absolute */
       left: 0; top: 0; width: 100vw; height: 100vh;
       pointer-events: none;
       z-index: 1000;
     }
     .confetti-piece {
       position: absolute;
-      width: 16px; height: 16px;
+      width: 28px; height: 28px; /* Más grandes */
       border-radius: 50%;
-      opacity: 0.8;
-      animation: confetti-fall 1.2s linear forwards;
+      opacity: 0.92;
+      border: 2px solid #fff6;
+      animation: confetti-fall 2.8s linear forwards; /* Más duración */
+      will-change: transform, opacity;
+      filter: drop-shadow(0 2px 8px #0003);
     }
     @keyframes confetti-fall {
-      0% { transform: translateY(-40px) scale(1.2) rotate(0deg);}
+      0% { transform: translateY(-60px) scale(1.2) rotate(0deg);}
       80% { opacity: 1;}
-      100% { transform: translateY(100vh) scale(0.7) rotate(360deg); opacity: 0;}
+      100% { transform: translateY(110vh) scale(0.7) rotate(720deg); opacity: 0;}
     }
     /* End screen */
     #end-screen {
@@ -808,17 +811,21 @@ function renderKeyboard() {
 
     // Confetti
     function showConfetti() {
-      for(let i=0;i<18;i++) {
+      // Aumenta la cantidad y variedad de colores
+      const colors = [
+        '#aee7fa','#ffd6e0','#fff7ae','#caffd0','#e0d6ff',
+        '#ffb347','#ff7f7f','#7fff7f','#4a90e2','#fcb900'
+      ];
+      for(let i=0;i<45;i++) { // Más confetis
         let piece = document.createElement('div');
         piece.className = 'confetti-piece';
-        piece.style.left = (50+Math.random()*40-20)+'vw';
-        piece.style.top = (30+Math.random()*10-5)+'vh';
-        piece.style.background = [
-          'var(--pastel-blue)','var(--pastel-pink)','var(--pastel-yellow)','var(--pastel-green)','var(--pastel-purple)'
-        ][Math.floor(Math.random()*5)];
-        piece.style.animationDuration = (0.9+Math.random()*0.7)+'s';
+        piece.style.left = (10+Math.random()*80)+'vw';
+        piece.style.top = (10+Math.random()*10-5)+'vh';
+        piece.style.background = colors[Math.floor(Math.random()*colors.length)];
+        piece.style.animationDuration = (2.2+Math.random()*1.2)+'s'; // Más duración
+        piece.style.transform = `rotate(${Math.random()*360}deg)`;
         confetti.appendChild(piece);
-        setTimeout(()=>piece.remove(),1200);
+        setTimeout(()=>piece.remove(), 3200); // Más tiempo visible
       }
     }
     // End screen
@@ -899,6 +906,16 @@ function smoothScrollTo(targetY, duration = 1200) {
   }
   requestAnimationFrame(step);
 }
+
+// Añade este código JS para que el confetti acompañe el scroll:
+window.addEventListener('scroll', ()=>{
+  const y = window.scrollY;
+  confetti.style.top = y + 'px';
+});
+window.addEventListener('resize', ()=>{
+  confetti.style.width = window.innerWidth + 'px';
+  confetti.style.height = window.innerHeight + 'px';
+});
   </script>
 </body>
 </html>
