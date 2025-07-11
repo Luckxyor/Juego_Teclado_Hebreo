@@ -324,11 +324,11 @@
       box-shadow: 0 -2px 10px #0001;
     }
     #restart-btn {
-      font-size: 1.2rem;
+      font-size: 1.6rem;
       background: linear-gradient(90deg, var(--pastel-pink), var(--pastel-blue));
       border: none;
       border-radius: 1rem;
-      padding: 0.5rem 1.5rem;
+      padding: 1rem 2rem;
       cursor: pointer;
       box-shadow: 0 2px 8px #0002;
       font-family: var(--main-font);
@@ -399,6 +399,10 @@
   font-size: 32px;
 }
 
+footer p{
+  margin: 0;
+}
+
 .key.space {
   width: 320px;
   height: 70px;
@@ -426,9 +430,10 @@
     </div>
     <div class="keyboard" id="keyboard"></div>
     <div id="progress" style="font-size:1.2rem;color:#555;margin-top:-1rem;"></div>
+    <button id="restart-btn">Reiniciar Juego</button>
   </main>
   <footer>
-    <button id="restart-btn">Reiniciar Juego</button>
+    <p>&copy; 2025 Hecho por Lucas Benezra. Todos los derechos reservados.</p>
   </footer>
   <div class="confetti" id="confetti"></div>
   <div id="end-screen">
@@ -609,7 +614,7 @@ function renderKeyboard() {
         wheel.style.transform = '';
         showDraggableLetter(chosenLetter);
         // Scroll suave y lento hacia abajo después del spin
-        smoothScrollTo(document.body.scrollHeight, 1200);
+        smoothScrollTo((document.body.scrollHeight)-1000, 1200);
         spinning = false;
         spinBtn.disabled = true;
       },2200);
